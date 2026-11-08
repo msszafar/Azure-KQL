@@ -1,1 +1,79 @@
+Building an Azure Asset Inventory: A Layman's Guide with Gemini
+When managing an Azure tenant, maintaining a clear asset inventory is essential. Using Azure Resource Graph Explorer alongside AI assistance makes it simple to discover, inspect, and filter core infrastructure components without needing complex scripts.
 
+Step 1: Initial Exploration with Resource Graph Explorer
+Instead of manually checking every subscription, use the Resource Graph Explorer in the Azure portal to pull a quick sample of your resources and inspect their schema:
+
+resources 
+| take 10
+
+Analyzing the Fields
+By running a sample query, you can examine the available attributes and identify which fields matter most for your inventory:
+
+Available Fields: id, name, type, tenantId, kind, location, resourceGroup, subscriptionId, managedBy, sku, plan, properties, tags, identity, zones
+
+Core Identifiers Selected:
+
+name – The friendly name of the resource.
+
+type – The technical classification of the resource.
+
+location – The geographic region where the resource is deployed.
+
+Note on Location Filtering: Because resources span multiple geographic regions and no single region is targeted exclusively, the location field is kept for visibility rather than used as an active search or filter criterion.
+
+Step 2: Mapping Resource Types
+Next, analyze the distinct resource types present across the tenant and evaluate their distribution to understand the environment's scope.
+
+A broad scan of the type field reveals a diverse footprint:
+
+1- Virtual Machines (virtualmachines) & Disks (disk)
+2- Network Interfaces (networkinterfaces), Virtual Networks (virtualnetworks), and Public IP Addresses (publicipaddresses)
+3- Network Security Groups (networksecuritygroups) & Route Tables (routetables)
+4- Storage Accounts (storageaccounts)
+5- App Service Plans (serverfarms) and Web Apps (sites)
+6- Private Endpoints (privateendpoints) & Private DNS Zones (privatednszones)
+7- Monitoring & Governance: Data Collection Rules (datacollectionrules), Metric Alerts (metricalerts), Activity Log Alerts (activitylogalerts), Action Groups (actiongroups), and Key Vaults (vaults)
+8- Application Insights Components (components), Workbooks (workbooks), and User-Assigned Identities (userassignedidentities)
+
+Step 3: Shortlisting the Top 10 Critical Assets
+With dozens of resource types discovered, the next objective is to narrow down the inventory to the top 10 most critical core resources required for foundational tracking, security governance, and operational oversight.
+
+Step 4: Focusing on Virtual Machines (VMs)
+When beginning the deep dive into individual asset types, start with Virtual Machines (Microsoft.Compute/virtualmachines) as the primary workload baseline.
+
+Validation & Verification Workflow
+Before writing or executing KQL queries, establish an explicit validation methodology to ensure absolute data accuracy across your environment:
+
+- Pre-Query Baseline: Determine the expected number of VMs prior to running the search query.
+- Resource Graph Verification: Execute the KQL query to list VMs and obtain their exact count and regional distribution.
+- Portal Cross-Check: Manually verify the VM count directly within the Virtual Machines blade in the Azure portal to ensure parity.
+- SIEM / Telemetry Check: Cross-reference the discovered VMs against your security monitoring platform (e.g., Microsoft Sentinel) to verify that all instances are actively logging and reporting.
+
+Validation Checklist
+[ ] Confirm the total number of VMs returned by the Resource Group KQL query. (done)
+[ ] Cross-verify the count manually inside the native Azure VM service. (done)
+[ ] Audit telemetry coverage to confirm how many of these VMs are successfully reporting to Sentinel.
+
+To verify whether all virtual machines are actively reporting telemetry to Microsoft Sentinel, you can query the Heartbeat table.
+
+Inspecting the Heartbeat Schema
+Running a quick sample query helps inspect the structure and available attributes of the heartbeat logs:
+Heartbeat
+| take 10
+
+This returns key fields such as Computer, Category, OSType, SCAgentChannel, ResourceProvider, and ResourceType. Focusing on the Category field reveals two distinct values:
+
+1- Azure Monitor Agent (AMA)
+2- Direct Agent
+
+Understanding the Agent Categories
+The presence of both values indicates a mixed or transitional deployment state across your Azure infrastructure:
+
+- Direct Agent (Legacy / MMA): The older Microsoft Monitoring Agent approach where configuration and log collection were managed directly at the Log Analytics workspace level.
+- Azure Monitor Agent (AMA): The modern, unified telemetry agent where log collection is centrally managed via Data Collection Rules (DCRs).
+
+Seeing both categories confirms that your Azure VMs are currently utilizing a hybrid ingestion model, with some machines still reporting via the legacy MMA approach while others have been successfully migrated to AMA.
+
+Next Steps: Agent Distribution Analysis
+With the baseline established, the next objective is to run a comparative analysis to determine the exact distribution of VMs reporting through the older legacy approach versus the new AMA standard.
