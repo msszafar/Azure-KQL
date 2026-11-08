@@ -64,8 +64,8 @@ Heartbeat
 
 This returns key fields such as Computer, Category, OSType, SCAgentChannel, ResourceProvider, and ResourceType. Focusing on the Category field reveals two distinct values:
 
-1- Azure Monitor Agent (AMA)
-2- Direct Agent
+1- Azure Monitor Agent (AMA - Newer one)
+2- Direct Agent (MMA - Older one)
 
 Understanding the Agent Categories
 The presence of both values indicates a mixed or transitional deployment state across your Azure infrastructure:
@@ -77,3 +77,16 @@ Seeing both categories confirms that your Azure VMs are currently utilizing a hy
 
 Next Steps: Agent Distribution Analysis
 With the baseline established, the next objective is to run a comparative analysis to determine the exact distribution of VMs reporting through the older legacy approach versus the new AMA standard.
+
+Identified that logs from both agent (AMA and MMA) are being ingested, found these tables 
+1- MMA (older one) & AMA (Newer one) - Both Agents: Table Name: Event - It contains Application, Systems logs
+2- MMA (older one) & AMA (Newer one) - Both Agents: Table Name: Syslog - Linux system logs
+3- MMA (older one) & AMA (Newer one) - Both Agents: Table Name: Perf - Performance metrics of both linux and windows
+4- MMA (older one) & AMA (Newer one) - Both Agents: Table Name: Heartbeat - agent health
+5- MMA (older one): Table Name: SecurityEvent - security event logs
+6- MMA (older one): Table Name: Operation - Agent health, error, status monitoring
+7- MMA (older one): Table Name: Alert - security alerts
+8- AMA (Newer one): Table Name: WindowsEvent - XML based windows event logs
+9- AMA (Newer one): Table Name: InsightMetrics - performance metrics
+10 - AMA (Newer One): Table Name: Custom Table (*_CL) - custom logs collected
+
